@@ -1,5 +1,5 @@
 import { mapStocks } from "src/utils/mapStocks";
-import { getAll, getById } from "./common";
+import { create, getAll, getById } from "./common";
 
 export const getAllProducts = async () => {
     const products = await getAll(process.env.PRODUCTS_TABLE_NAME);
@@ -20,4 +20,28 @@ export const getProductById = async (id: string) => {
         ...product.data,
         count: stocks.data.count
     };
-}
+};
+
+export const createProduct = async ({ id, title, description, price, count }) => {
+    const productItem = {
+        id,
+        title,
+        description,
+        price
+    };
+    const stocksItem = {
+        id,
+        count
+    };
+
+    const productResponse = await create(productItem, process.env.PRODUCTS_TABLE_NAME);
+    if (!productResponse.success) return Promise.resolve(productResponse);
+
+    const stocksResponse = await create(stocksItem, process.env.STOCKS_TABLE_NAME);
+    if (!stocksResponse.success) return Promise.resolve(stocksResponse);
+
+    return Promise.resolve({
+        success: true,
+        id
+    });
+};

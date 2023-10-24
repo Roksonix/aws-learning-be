@@ -33,3 +33,18 @@ export const getById = async (id: string, tableName: string) => {
 
   return result;
 }
+
+export const create = async (data, tableName: string) => {
+  const client = new DynamoDB.DocumentClient();
+  const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
+    TableName: tableName,
+    Item: data,
+  };
+
+  return new Promise((resolve) => {
+    client.put(params, (err) => {
+      resolve(composeResult(data, err));
+      if (err) console.error(err);
+    });
+  });
+};
