@@ -1,6 +1,6 @@
 export const composeResult = (value = null, error = null) => {
     const result = {
-        data: value || [],
+        data: value || null,
         success: !!value,
         message: value ? 'Success' : 'An internal server error occurred'
     };
