@@ -14,6 +14,14 @@ export const createProduct = async (event) => {
     400
   );
 
+  if (!body.title || !body.price) return formatJSONResponse(
+    {
+      data: null,
+      message: "Please provide valid at least title and price for the product",
+    },
+    400
+  );
+
   const productResponse = await create({
     ...body,
     id: uuidv4(),
