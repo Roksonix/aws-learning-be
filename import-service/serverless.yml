@@ -1,0 +1,35 @@
+service: import-service
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: eu-west-1
+
+functions:
+  importProductsFile:
+    handler: importProductsFile.handler
+    events:
+      - http:
+          method: get
+          path: import
+          request:
+            parameters:
+              querystrings:
+                name: true
+    package:
+      include:
+        - node_modules/**
+  importFileParser:
+    handler: importFileParser.handler
+    events:
+      - s3:
+          bucket: upload-bucket-volodymyr-vashchuk
+          existing: true
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: uploaded/
+    package:
+      include:
+        - node_modules/**
