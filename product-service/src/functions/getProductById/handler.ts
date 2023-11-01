@@ -1,10 +1,15 @@
 import { middyfy } from '../../libs/lambda';
 import { formatJSONResponse } from '../../libs/api-gateway';
-import { productList } from '../__mockData__';
+import { getProductById as get } from 'src/services/product.service';
 
 export const getProductById = async (event) => {
     const { productId } = event.pathParameters;
-    return formatJSONResponse(productList.find(({ id }) => id === productId));
+    const result = await get(productId);
+
+    return formatJSONResponse({
+        ...result,
+        isMock: false
+    });
 };
 
 export const main = middyfy(getProductById);
