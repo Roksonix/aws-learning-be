@@ -6,6 +6,20 @@ provider:
   runtime: nodejs14.x
   stage: dev
   region: eu-west-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:PutBucketCORS
+      Resource:
+        - arn:aws:s3:::import-service-dev-serverlessdeploymentbucket-17pfto8u4npz6/*
+        - arn:aws:s3:::import-service-dev-serverlessdeploymentbucket-17pfto8u4npz6
+    - Effect: Allow
+      Action:
+        - sqs:*
+      Resource:
+        - arn:aws:sqs:eu-west-1:854321213400:products-queue
 
 functions:
   importProductsFile:

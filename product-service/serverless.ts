@@ -5,6 +5,7 @@ import createProduct from '@functions/createProduct';
 import getProducts from '@functions/getProducts';
 import getProductById from '@functions/getProductById';
 import getAvailable from '@functions/getAvailable';
+import catalogBatchProcess from '@functions/catalogBatchProcess';
 
 const serverlessConfiguration: AWS = {
   service: 'product-service',
@@ -23,9 +24,23 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
     },
+    iamRoleStatements: [
+      {
+        Effect: "Allow",
+        Action: ["sns:Publish"],
+        Resource: ["Ref:CreateProductTopic"],
+      },
+    ]
   },
   // import the function via paths
-  functions: { fillWithMockProducts, createProduct, getProducts, getProductById, getAvailable },
+  functions: {
+    fillWithMockProducts,
+    createProduct,
+    getProducts,
+    getProductById,
+    getAvailable,
+    catalogBatchProcess
+  },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -38,6 +53,33 @@ const serverlessConfiguration: AWS = {
       platform: 'node',
       concurrency: 10,
     },
+  },
+  resources: {
+    Resources: {
+      productsQueue: {
+        Type: "AWS::SQS::Queue",
+        Properties: {
+          QueueName: "products-queue",
+        },
+      },
+      CreateProductTopic: {
+        Type: "AWS::SNS::Topic",
+        Properties: {
+          DisplayName: "Create Product Topic",
+          TopicName: "product-import-topic",
+        },
+      },
+      CreateProductTopicSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Protocol: "email",
+          TopicArn: {
+            Ref: "CreateProductTopic",
+          },
+          Endpoint: "Volodymyr_Vashchuk@epam.com",
+        },
+      },
+    }
   }
 };
 
