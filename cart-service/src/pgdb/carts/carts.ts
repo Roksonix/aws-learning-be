@@ -11,7 +11,7 @@ class PGCarts {
       .then(({ rows }) => rows.length ? objKeysToCamelCase(rows[0] as object) : null);
   }
 
-  findByUserId(userId: string, status?: CartStatus) {
+  findByUserId(userId: string, status?: CartStatus): Promise< Cart | null> {
     const query = `
       SELECT * 
         FROM ${this.tableName}
@@ -23,7 +23,7 @@ class PGCarts {
       values.push(status);
     }
     return this.client.exec(query, values)
-      .then(({ rows }) => rows.length ? objKeysToCamelCase(rows[0] as object) : null);
+      .then(({ rows }) => rows.length ? objKeysToCamelCase(rows[0] as object) as unknown as Cart : null);
   }
 
   create(data: Pick<Cart, 'userId'>) {
