@@ -6,6 +6,14 @@ provider:
   runtime: nodejs14.x
   stage: dev
   region: eu-west-1
+  httpApi:
+    authorizers:
+      basicAuthorizer:
+        type: request
+        functionArn: arn:aws:lambda:eu-west-1:854321213400:function:authorization-service-dev-basicAuthorizer
+        resultTtlInSeconds: 0
+        identitySource:
+          - $request.header.Authorization
   iamRoleStatements:
     - Effect: Allow
       Action:
