@@ -1,5 +1,8 @@
 service: cart-service
 frameworkVersion: "3"
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
 
 provider:
   name: aws
@@ -7,5 +10,15 @@ provider:
   region: eu-west-1
 
 functions:
-  hello:
-    handler: handler.hello
+  main:
+    handler: dist/handler.handler
+    url: true
+    events:
+      - http:
+          method: ANY
+          path: /
+          cors: true
+      - http:
+          method: ANY
+          path: '{proxy+}'
+          cors: true
