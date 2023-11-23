@@ -11,7 +11,7 @@ provider:
 
 functions:
   main:
-    handler: dist/handler.handler
+    handler: dist/main.handler
     url: true
     events:
       - http:
