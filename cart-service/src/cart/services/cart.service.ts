@@ -1,55 +1,47 @@
 import { Injectable } from '@nestjs/common';
-
-import { v4 } from 'uuid';
-
-import { Cart } from '../models';
+import { PGDB } from '../../pgdb';
+import { CartStatus } from '../../pgdb/carts/model';
 
 @Injectable()
 export class CartService {
-  private userCarts: Record<string, Cart> = {};
+  async findByUserId(userId: string) {
+    const cart = await PGDB.db.carts.findByUserId(userId, CartStatus.Open);
 
-  findByUserId(userId: string): Cart {
-    return this.userCarts[ userId ];
+    if (!cart) return null;
+
+    return {
+      ...cart,
+      items: await PGDB.db.cartItems.findManyByCartId(cart.cartId)
+    };
   }
 
   createByUserId(userId: string) {
-    const id = v4(v4());
-    const userCart = {
-      id,
-      items: [],
-    };
-
-    this.userCarts[ userId ] = userCart;
-
-    return userCart;
+    return PGDB.db.carts.create({ userId });
   }
 
-  findOrCreateByUserId(userId: string): Cart {
-    const userCart = this.findByUserId(userId);
+  async findOrCreateByUserId(userId: string) {
+    let userCart = await PGDB.db.carts.findByUserId(userId, CartStatus.Open);
+    const items = userCart?.cartId ? await PGDB.db.cartItems.findManyByCartId(userCart.cartId) : [];
+    userCart ??= await this.createByUserId(userId)
+    const { cartId } = userCart
 
-    if (userCart) {
-      return userCart;
+    return {
+      cartId,
+      items
     }
-
-    return this.createByUserId(userId);
   }
 
-  updateByUserId(userId: string, { items }: Cart): Cart {
-    const { id, ...rest } = this.findOrCreateByUserId(userId);
-
-    const updatedCart = {
-      id,
-      ...rest,
-      items: [ ...items ],
-    }
-
-    this.userCarts[ userId ] = { ...updatedCart };
-
-    return { ...updatedCart };
+  updateByUserId(userId: string, { items }) {
+    // Skipped this method
+    return null;
   }
 
-  removeByUserId(userId): void {
-    this.userCarts[ userId ] = null;
+  updateStatusById(cartId: string, status: CartStatus) {
+    return PGDB.db.carts.updateStatusById(cartId, status);
+  }
+
+  async removeByUserId(userId) {
+    await PGDB.db.carts.deleteByUserId(userId, CartStatus.Open)
   }
 
 }
